@@ -1,3 +1,28 @@
+# Agent instructions: openclaw
+
+<!-- BEGIN SHIP STANDARD -->
+## Ship Standard (13 November 2026)
+
+Follow the canonical [Ship Standard](https://github.com/PhDNetworks-Systems/quoteforge/blob/main/docs/standards/SHIP-STANDARD.md) and [Ship Engineer](https://github.com/PhDNetworks-Systems/quoteforge/blob/main/.claude/agents/ship-engineer.md) in every software repository. This section supersedes older instructions to stop at a draft PR or wait for Danny to review, merge or deploy ordinary engineering work. Preserve repository-specific checks, data rules, protected production release ceremonies and generated-file sources.
+
+Done means built, verified, independently reviewed, merged to the default branch, deployed, checked live and recorded in Asana (and Linear once connected). Danny provides the outcome; agents own the engineering steps.
+
+1. Read the repository instructions and check existing branches, PRs and tasks before starting. Continue existing work rather than duplicate it.
+2. Write a plan and any interface contract before non-trivial work. Give parallel agents separate files.
+3. Branch from the latest default branch. Open a normal PR into it; never strand a draft or stack new work on another PR branch.
+4. Run the repository's executable checks locally on existing hardware; inspect UI screenshots at 390 px and 1440 px when applicable. Obtain fresh-context independent review and fix findings. Retain different-family review where required. Never replace required checks with a claim that they passed.
+5. Merge after verification passes, using squash; the phd-vault repository retains merge commits to preserve vault/live. Do not ask Danny to manage GitHub. Confirm the documented deployment and live smoke check, then record the commit, commands, results and links.
+6. If production breaks, use the documented rollback and verify recovery, then fix forward. Retain backup-before-deploy and release-specific WordPress approval controls. If blocked, finish independent work and record the exact missing check or access in the PR and Asana.
+
+These are the Danny-only boundaries: client/customer messages and client-brand social posts (draft for him to send); spend beyond the agreed envelope; a credential, login, OAuth or 2FA only he can provide; DNS, domain, certificate or billing changes; deleting repositories, data or production resources. They are additive to the existing money/legal gates (including new commitments over £50, card/funds actions, invoice/tax issuance and contract signatures), protected live-client WordPress release approvals, App Store submission and certificate revocation. Ordinary branches, checks, reviews, merges and non-WordPress deployments are autonomous.
+
+Never force-push or rewrite a default branch; delete repositories, unmerged branches with unique work or anything you did not create; skip, weaken or hide checks; commit secrets or real customer data; contact clients; name suppliers in client-facing text; change DNS; or re-enable GitHub Actions. Leave every PR you opened merged or with a written, evidenced blocker.
+
+Claude Code only: use classifier-guarded auto mode rather than bypass permissions. Codex routine engineering uses the workspace-write sandbox with network access for git and gh; never turn off security protections to ship.
+
+<!-- END SHIP STANDARD -->
+
+<!-- BEGIN REPOSITORY RULES -->
 # Repository Guidelines
 - Repo: https://github.com/openclaw/openclaw
 - GitHub issues/comments/PR comments: use literal multiline strings or `-F - <<'EOF'` (or $'...') for real newlines; never embed "\\n".
@@ -161,3 +186,84 @@
 - Publish: `npm publish --access public --otp="<otp>"` (run from the package dir).
 - Verify without local npmrc side effects: `npm view <pkg> version --userconfig "$(mktemp)"`.
 - Kill the tmux session after publish.
+<!-- END REPOSITORY RULES -->
+
+<!-- BEGIN REPOSITORY FACTS -->
+## Repository facts and verification
+
+Source: GitHub default-branch inventory for `PhDNetworks/openclaw` on 13 November 2026.
+
+- Default branch: `main`.
+- Keep repository-specific tests, private-data restrictions and release controls in force.
+- This is an owned fork. Open and merge PRs only in `PhDNetworks/openclaw` against its own default branch; this rollout does not authorise upstream PRs or upstream changes.
+- Repository description: Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞
+- Repository homepage metadata: <https://openclaw.ai>. Verify the live target before deployment; this metadata is not a runtime check.
+
+Verification/build script candidates declared in `package.json` (metadata and script-call analysis, not an execution allowlist; inspect source, fixture modes and the documented package manager):
+
+- Script `docs:build`: `cd docs && pnpm dlx --reporter append-only mint broken-links`.
+- Script `build`: `pnpm canvas:a2ui:bundle && tsdown && node --import tsx scripts/canvas-a2ui-copy.ts && node --import tsx scripts/copy-hook-metadata.ts && node --import tsx scripts/write-build-info.ts`.
+- Script `release:check`: `node --import tsx scripts/release-check.ts`.
+- Script `ui:build`: `node scripts/ui.js build`.
+- Script `ios:build`: `bash -lc 'cd apps/ios && xcodegen generate && xcodebuild -project OpenClaw.xcodeproj -scheme OpenClaw -destination "${IOS_DEST:-platform=iOS Simulator,name=iPhone 17}" -configuration Debug build'`.
+- Script `android:test`: `cd apps/android && ./gradlew :app:testDebugUnitTest`.
+- Script `lint`: `oxlint --type-aware src test`.
+- Script `lint:swift`: `swiftlint lint --config .swiftlint.yml && (cd apps/ios && swiftlint lint --config .swiftlint.yml)`.
+- Script `lint:all`: `pnpm lint && pnpm lint:swift`.
+- Script `test`: `node scripts/test-parallel.mjs`.
+- Script `test:watch`: `vitest`.
+- Script `test:ui`: `pnpm --dir ui test`.
+- Script `test:force`: `node --import tsx scripts/test-force.ts`.
+- Script `test:coverage`: `vitest run --coverage`.
+- Script `test:e2e`: `vitest run --config vitest.e2e.config.ts`.
+- Script `test:docker:onboard`: `bash scripts/e2e/onboard-docker.sh`.
+- Script `test:docker:gateway-network`: `bash scripts/e2e/gateway-network-docker.sh`.
+- Script `test:docker:qr`: `bash scripts/e2e/qr-import-docker.sh`.
+- Script `test:docker:doctor-switch`: `bash scripts/e2e/doctor-install-switch-docker.sh`.
+- Script `test:docker:plugins`: `bash scripts/e2e/plugins-docker.sh`.
+- Script `test:docker:cleanup`: `bash scripts/test-cleanup-docker.sh`.
+- Script `test:install:e2e`: `bash scripts/test-install-sh-e2e-docker.sh`.
+- Script `test:install:smoke`: `bash scripts/test-install-sh-docker.sh`.
+- Script `test:install:e2e:openai`: `OPENCLAW_E2E_MODELS=openai CLAWDBOT_E2E_MODELS=openai bash scripts/test-install-sh-e2e-docker.sh`.
+- Script `test:install:e2e:anthropic`: `OPENCLAW_E2E_MODELS=anthropic CLAWDBOT_E2E_MODELS=anthropic bash scripts/test-install-sh-e2e-docker.sh`.
+- Script `protocol:check`: `pnpm protocol:gen && pnpm protocol:gen:swift && git diff --exit-code -- dist/protocol.schema.json apps/macos/Sources/OpenClawProtocol/GatewayModels.swift`.
+- Script `check:loc`: `node --import tsx scripts/check-ts-max-loc.ts --max 500`.
+
+Release/live/runbook-review script candidates declared in `package.json` (identified from names, commands and transitive script calls). Run only through their documented path after verification; preserve backup, credential, data, WordPress and owner gates:
+
+- Script `lint:fix`: `pnpm format:fix && oxlint --type-aware --fix src test`.
+- Script `format:fix`: `oxfmt --write src test`.
+- Script `test:live`: `OPENCLAW_LIVE_TEST=1 CLAWDBOT_LIVE_TEST=1 vitest run --config vitest.live.config.ts`.
+- Script `test:docker:live-models`: `bash scripts/test-live-models-docker.sh`.
+- Script `test:docker:live-gateway`: `bash scripts/test-live-gateway-models-docker.sh`.
+- Script `test:docker:all`: `pnpm test:docker:live-models && pnpm test:docker:live-gateway && pnpm test:docker:onboard && pnpm test:docker:gateway-network && pnpm test:docker:qr && pnpm test:docker:doctor-switch && pnpm test:docker:plugins && pnpm test:docker:cleanup`.
+- Script `test:all`: `pnpm lint && pnpm build && pnpm test && pnpm test:e2e && pnpm test:live && pnpm test:docker:all`.
+
+Verification/build script candidates declared in `ui/package.json` (metadata and script-call analysis, not an execution allowlist; inspect source, fixture modes and the documented package manager):
+
+- Script `build`: `vite build`.
+- Script `test`: `vitest run --config vitest.config.ts`.
+
+Configuration paths observed (inspect the owning runbook to distinguish current production, fixtures and legacy configuration):
+
+- `.github/workflows/docker-release.yml`.
+- `Dockerfile`.
+- `docker-compose.yml`.
+- `scripts/docker/cleanup-smoke/Dockerfile`.
+- `scripts/docker/install-sh-e2e/Dockerfile`.
+- `scripts/docker/install-sh-nonroot/Dockerfile`.
+- `scripts/docker/install-sh-smoke/Dockerfile`.
+- `scripts/e2e/Dockerfile`.
+
+If a deploy/publish command writes to a live client WordPress/Krystal site, stop at the protected exact-release approval and fresh-backup ceremony. If it publishes client-brand social content or communicates with customers, prepare a draft for Danny to send. Neither a script name nor this inventory grants those permissions.
+
+GitHub workflow files are historical verification/deployment source, not authority to start hosted runs. Execute their applicable checks locally. Use the verified platform integration or documented local deploy equivalent; do not enable or dispatch Actions. Migrate any active automatic workflow only with equivalent executable local evidence and an explicit contract update.
+
+For a documentation-only change, run Markdown/link sanity and `git diff --check`, plus any executable repository check that reads these files. For code changes, run the component’s full required verification from its instructions and workflows locally; keep GitHub Actions retired. Missing verification is a recorded failure, never a pass.
+
+Deploy through the existing verified production path after merge. Where a platform integration is absent, the Ship Engineer owns the documented deploy command and live smoke check. Do not invent a deployment command or production URL. Establish an unknown path from the owning configuration, record an exact access blocker if required, and complete independent work.
+
+Rollback a released change by reverting its merge through a new verified PR, then confirm the platform redeploy and live recovery. Preserve unique branches. For databases and WordPress, retain the existing fresh-backup, additive-migration and protected release-approval rules.
+
+Secrets belong in the existing secret store/environment, never Git. Discover required variable names from the owning config without printing their values. Never commit customer data, private inputs or generated customer artefacts.
+<!-- END REPOSITORY FACTS -->
